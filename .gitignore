@@ -1,0 +1,28 @@
+# Node dependencies
+node_modules/
+
+# Vite build output
+dist/
+
+# Optional: local environment files
+.env
+.env.local
+.env.*
+!.env.example
+
+# Editor folders/files
+.vscode/
+.idea/
+
+# OS junk files
+.DS_Store
+Thumbs.db
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript build artifacts (if you ever emit to a folder)
+*.tsbuildinfo
