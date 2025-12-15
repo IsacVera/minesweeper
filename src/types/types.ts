@@ -5,6 +5,7 @@ export type Board = {
     grid: number[][],
     rowLength: number;
     colLength: number;
+    mineNum: number;
 }
 
 type CellState = "open" | "unopened";
