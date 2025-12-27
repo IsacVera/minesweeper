@@ -1,95 +1,38 @@
-import { Board } from "./types/types"
+import { BoardState } from "./types/types"
 export class Game {
-    private board: Board = {
-            state: "not started",
-            grid: [[]],
-            rowLength: 8,
-            colLength: 10,
-            mineNum: 10,
-        };
+    private gameState: BoardState;
 
-    constructor() {
-        this.board.grid = this.resetBoard(this.board.rowLength, this.board.colLength);
+    constructor () {
+        this.gameState = "not started"
     }
 
-    public resetBoard(row: number, col: number): number[][]{
-        const arr: number[][] = []
-        for (let i=0; i<row; i++) {
-            const row: number[] = [];
-            for (let j=0; j<col; j++) {
-                row.push(0);
-            }
-            arr.push(row);
-        }
-
-        this.fillBoardMines(arr);
-        this.fillBoardNums(arr);
-        return arr;
-    }
-
-    private fillBoardMines(grid: number[][]):void {
-        const coordList: number[][] = [];
-
-        for (let i=0; i<this.board.rowLength; i++) {
-            for (let j=0; j<this.board.colLength; j++) {
-                coordList.push([i, j]);
-            }
-        }
-
-        let mineCount = 0;
-        while (mineCount < this.board.mineNum) {
-            const mineFreeCells = coordList.length;
-            const randCoord = Math.floor(Math.random() * mineFreeCells);
-
-            // .splice returns an array so the [0] at the end just removes the outer array
-            //  since we only want one element from the array
-            const mineCoord = coordList.splice(randCoord, 1)[0]; 
-            grid[mineCoord[0]][mineCoord[1]] = -1;
-            mineCount++;
-        }
-    }
-
-    private fillBoardNums(board: number[][]): void {
-        const getCoordsAroundMine = (row: number, col: number) => {
-            const coordList: number[][] = []
-            for(let i=-1; i<2; i++) {
-                for(let j=-1; j<2; j++) {
-                    if (i === 0 && j === 0) continue;
-                    if (row + i < 0 || row + i > this.board.rowLength-1) continue;
-                    if (col + j < 0 || col + j > this.board.colLength-1) continue;
-
-                    coordList.push([row + i, col + j])
-                }
-            } 
-            return coordList
-        }
-
-        const coordsToAddTo: number[][] = []
-
-        for(let i=0; i<this.board.rowLength; i++) {
-            for(let j=0; j<this.board.colLength; j++) {
-                if (board[i][j] === -1) {
-                    const tempList = getCoordsAroundMine(i, j); 
-                    tempList.forEach((coords) => coordsToAddTo.push(coords))
-                }
-            }
-        }
-        console.log(JSON.parse(JSON.stringify(board)));
-
-        coordsToAddTo.forEach((val) => {
-            const yCoord = val[0]
-            const xCoord = val[1]
-
-            if (board[yCoord][xCoord] !== -1) {
-                board[yCoord][xCoord]++;
-            }
-        })
+    public displayBoard(board: number[][]): HTMLElement {
+        const boardDiv = document.createElement("div");
         console.log(board)
+
+        board.forEach((row, y) => {
+            const rowDiv = document.createElement("div");
+            row.forEach((cellValue, x) => {
+                const cell = document.createElement("div");
+                cell.textContent = String(cellValue);
+
+                cell.classList.add("cell");
+                if (cellValue === -1) { cell.classList.add("mine"); cell.textContent = ""}
+                else if (cellValue === 1) cell.classList.add("one")
+                else if (cellValue === 2) cell.classList.add("two")
+                else if (cellValue === 3) cell.classList.add("three")
+                else if (cellValue === 4) cell.classList.add("four")
+                else if (cellValue === 5) cell.classList.add("five")
+                else if (cellValue === 6) cell.classList.add("six")
+                else if (cellValue === 7) cell.classList.add("seven")
+                else if (cellValue === 8) cell.classList.add("eight")
+                
+                cell.dataset.x = String(x)
+                cell.dataset.y = String(y)
+                boardDiv.appendChild(cell);
+            })
+        });
+
+        return boardDiv;
     }
-
-    public getBoard(): number[][] {
-        return this.board.grid;
-    }
-
-
 }

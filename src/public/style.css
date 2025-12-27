@@ -1,0 +1,45 @@
+body {
+    background-color: #181a1b;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.cell {
+    padding: .5rem;
+    border: 2px solid  ;
+    border-color: #717980 #232a33 #232a33 #717980;
+    /* background-color: #4d545d; */
+    font-weight: 1000;
+}
+
+.cell.mine {
+    background-image: url("icons/bomb.svg");
+}
+.cell.one {
+    color: #0606f4 
+}
+.cell.two {
+    color: #07850a 
+}
+.cell.three {
+    color: #f30404
+}
+.cell.four {
+    color: #0104e3 
+}
+.cell.five {
+    color: #840810 
+}
+.cell.six {
+    color: #04857d
+}
+.cell.seven {
+    color: #660c76
+}
+.cell.eight {
+    color: #660c76
+}

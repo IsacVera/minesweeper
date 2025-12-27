@@ -1,0 +1,63 @@
+body {
+    background-color: #181a1b;
+}
+
+#gameBoard {
+    width: auto;
+    display: inline-grid;
+    gap: 0px;
+
+    border: 5px solid;
+    border-color: #232a33 #717980 #717980 #232a33;
+}
+
+.cell {
+    height: 25px;
+    width: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid  ;
+    border-color: #717980 #232a33 #232a33 #717980;
+    background-color: #4d545d ;
+    font-weight: 1000;
+}
+
+.cell.mine {
+    background-image: url("icons/bomb.svg");
+}
+.cell.one {
+    color: #0606f4 
+}
+.cell.two {
+    color: #07850a 
+}
+.cell.three {
+    color: #f30404
+}
+.cell.four {
+    color: #0104e3 
+}
+.cell.five {
+    color: #840810 
+}
+.cell.six {
+    color: #04857d
+}
+.cell.seven {
+    color: #660c76
+}
+.cell.eight {
+    color: #660c76
+}
+
+.cell:active {
+    /* when changing border from 2px to 1px, you loose two px on the height and width
+     because there was an extra one on each side */
+    height: 27px;
+    width: 27px;
+    background-color: #394049;
+    border: 1px solid #1e262e;
+}
