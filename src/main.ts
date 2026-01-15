@@ -5,7 +5,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const app = document.querySelector("#app");
 
     const gameBoard = new Board();
-    const game = new Game();
+    const game = new Game(gameBoard);
 
     const gameBoardDiv = game.displayBoard(gameBoard.getBoard());
     gameBoardDiv.id = "gameBoard";

@@ -25,8 +25,12 @@ body {
     font-weight: 1000;
 }
 
+
 .cell.mine {
     background-image: url("icons/bomb.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px 16px;
 }
 .cell.one {
     color: #0606f4 
@@ -53,7 +57,20 @@ body {
     color: #660c76
 }
 
-.cell:active {
+.cell:not(.revealed) {
+  background-image: none;
+}
+
+.cell:active:hover {
+    /* when changing border from 2px to 1px, you loose two px on the height and width
+     because there was an extra one on each side */
+    height: 27px;
+    width: 27px;
+    background-color: #394049;
+    border: 1px solid #1e262e;
+}
+
+.cell.revealed {
     /* when changing border from 2px to 1px, you loose two px on the height and width
      because there was an extra one on each side */
     height: 27px;

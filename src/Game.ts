@@ -1,38 +1,141 @@
-import { BoardState } from "./types/types"
-export class Game {
-    private gameState: BoardState;
+import { GameState, Cell } from "./types/types"
+import { Board } from "./Board"
 
-    constructor () {
-        this.gameState = "not started"
+export class Game {
+    private gameState: GameState;
+    private pressedCell: HTMLElement | null = null;
+    private gameBoard: Board;
+
+    constructor (board: Board) {
+        this.gameState = "not started";
+        this.pressedCell = null;
+        this.gameBoard = board;
     }
 
-    public displayBoard(board: number[][]): HTMLElement {
+    public resetGame() {
+        //reset board
+
+        //reset game state
+
+        //reset click Events to adjust to new cells
+    }
+
+    public displayBoard(board: Cell[][]): HTMLElement {
+        const addClickEvents = (element: HTMLElement) => {
+            element.addEventListener("pointerdown", (e) => {
+                if (!(e.target instanceof Element)) return;
+                e.preventDefault();
+
+                const cell = e.target.closest<HTMLDivElement>(".cell") 
+                if (!cell) return;
+
+                this.pressedCell = cell;
+            })
+
+            element.addEventListener("pointerup", (e) => {
+                if (!(e.target instanceof Element)) {
+                    this.pressedCell = null;
+                    return;
+                }
+                const cell = e.target.closest<HTMLDivElement>(".cell") 
+
+                //(cell) to check if cell is not a null
+                if ((cell) && cell === this.pressedCell) {
+                    this.openCell(cell)
+                }
+                this.pressedCell = null;
+            })
+        }
+
+
         const boardDiv = document.createElement("div");
-        console.log(board)
 
         board.forEach((row, y) => {
             const rowDiv = document.createElement("div");
-            row.forEach((cellValue, x) => {
-                const cell = document.createElement("div");
-                cell.textContent = String(cellValue);
+            rowDiv.classList.add("row") // used to help navigate the boardDiv
+            row.forEach((cell, x) => {
+                const cellElement = document.createElement("div");
+                addClickEvents(cellElement)
 
-                cell.classList.add("cell");
-                if (cellValue === -1) { cell.classList.add("mine"); cell.textContent = ""}
-                else if (cellValue === 1) cell.classList.add("one")
-                else if (cellValue === 2) cell.classList.add("two")
-                else if (cellValue === 3) cell.classList.add("three")
-                else if (cellValue === 4) cell.classList.add("four")
-                else if (cellValue === 5) cell.classList.add("five")
-                else if (cellValue === 6) cell.classList.add("six")
-                else if (cellValue === 7) cell.classList.add("seven")
-                else if (cellValue === 8) cell.classList.add("eight")
+                cellElement.classList.add("cell");
+                if (cell.value === -1) { cellElement.classList.add("mine")}
+                else if (cell.value === 1) cellElement.classList.add("one");
+                else if (cell.value === 2) cellElement.classList.add("two");
+                else if (cell.value === 3) cellElement.classList.add("three");
+                else if (cell.value === 4) cellElement.classList.add("four");
+                else if (cell.value === 5) cellElement.classList.add("five");
+                else if (cell.value === 6) cellElement.classList.add("six");
+                else if (cell.value === 7) cellElement.classList.add("seven");
+                else if (cell.value === 8) cellElement.classList.add("eight");
                 
-                cell.dataset.x = String(x)
-                cell.dataset.y = String(y)
-                boardDiv.appendChild(cell);
+                cellElement.dataset.x = String(x);
+                cellElement.dataset.y = String(y);
+                cellElement.dataset.value = `${cell.value}`;
+                boardDiv.appendChild(cellElement);
             })
         });
-
         return boardDiv;
+    }
+
+    // Todo: Finish openCell 
+    private openCell(cell: HTMLDivElement) {
+        if (!cell.dataset.value || cell.classList.contains("revealed")) return
+        // -1 = mine
+        if (Number(cell.dataset.value) === -1) {
+            // ! Add Game Over
+            this.gameState = "finished";
+        }
+
+        if (this.gameState === "not started") this.gameState = "in progress";
+
+        this.gameBoard.addOpenCellCount();
+
+        // Todo: finish this
+        if (this.gameBoard.getOpenCellCount() === (this.gameBoard.getNumOfCells() - this.gameBoard.getNumOfMines())) {
+            this.gameState = "finished";
+            console.log("you won!")
+        }
+
+        if (Number(cell.dataset.value) > 0) {
+            cell.textContent = cell.dataset.value  ;
+        }
+
+        if (Number(cell.dataset.value) === 0) {
+            
+        }
+        cell.classList.add("revealed");
+
+        console.log(cell)
+        console.log(cell.dataset)
+    }
+
+    private openZeros(cell: HTMLDivElement, map: number[][]) {
+
+    }
+
+    private addClickEvents(element: HTMLElement) {
+        element.addEventListener("pointerdown", (e) => {
+            if (!(e.target instanceof Element)) return;
+            e.preventDefault();
+
+            const cell = e.target.closest<HTMLDivElement>(".cell") 
+            if (!cell) return;
+
+            this.pressedCell = cell;
+        })
+
+        element.addEventListener("pointerup", (e) => {
+            if (!(e.target instanceof Element)) {
+                this.pressedCell = null;
+                return;
+            }
+            const cell = e.target.closest<HTMLDivElement>(".cell") 
+
+            //(cell) to check if cell is not a null
+            if ((cell) && cell === this.pressedCell) {
+                this.openCell(cell)
+            }
+            this.pressedCell = null;
+        })
     }
 }
