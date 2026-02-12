@@ -1,14 +1,16 @@
 body {
     background-color: #181a1b;
+    text-align: center;
 }
 
 #gameBoard {
     width: auto;
     display: inline-grid;
-    gap: 0px;
-
     border: 5px solid;
     border-color: #232a33 #717980 #717980 #232a33;
+}
+.gameBoard.finished {
+    pointer-events: none;
 }
 
 .cell {

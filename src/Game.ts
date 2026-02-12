@@ -4,12 +4,14 @@ import { Board } from "./Board"
 export class Game {
     private gameState: GameState;
     private pressedCell: HTMLElement | null = null;
-    private gameBoard: Board;
+    private board: Board;
+    private cellElements: HTMLDivElement[][];
 
-    constructor (board: Board) {
+    constructor (gameBoard: Board) {
         this.gameState = "not started";
         this.pressedCell = null;
-        this.gameBoard = board;
+        this.board = gameBoard;
+        this.cellElements = this.makeDisplayBoard(gameBoard);
     }
 
     public resetGame() {
@@ -20,97 +22,161 @@ export class Game {
         //reset click Events to adjust to new cells
     }
 
-    public displayBoard(board: Cell[][]): HTMLElement {
-        const addClickEvents = (element: HTMLElement) => {
-            element.addEventListener("pointerdown", (e) => {
-                if (!(e.target instanceof Element)) return;
-                e.preventDefault();
+    private makeDisplayBoard(board: Board): HTMLDivElement[][] {
+        const grid = this.board.getBoard();
+        const cellArr: HTMLDivElement[][] = [];
 
-                const cell = e.target.closest<HTMLDivElement>(".cell") 
-                if (!cell) return;
-
-                this.pressedCell = cell;
-            })
-
-            element.addEventListener("pointerup", (e) => {
-                if (!(e.target instanceof Element)) {
-                    this.pressedCell = null;
-                    return;
-                }
-                const cell = e.target.closest<HTMLDivElement>(".cell") 
-
-                //(cell) to check if cell is not a null
-                if ((cell) && cell === this.pressedCell) {
-                    this.openCell(cell)
-                }
-                this.pressedCell = null;
-            })
-        }
-
-
-        const boardDiv = document.createElement("div");
-
-        board.forEach((row, y) => {
-            const rowDiv = document.createElement("div");
-            rowDiv.classList.add("row") // used to help navigate the boardDiv
+        grid.forEach((row, y) => {
+            const cellArrRow: HTMLDivElement[] = []
             row.forEach((cell, x) => {
                 const cellElement = document.createElement("div");
-                addClickEvents(cellElement)
-
                 cellElement.classList.add("cell");
-                if (cell.value === -1) { cellElement.classList.add("mine")}
-                else if (cell.value === 1) cellElement.classList.add("one");
-                else if (cell.value === 2) cellElement.classList.add("two");
-                else if (cell.value === 3) cellElement.classList.add("three");
-                else if (cell.value === 4) cellElement.classList.add("four");
-                else if (cell.value === 5) cellElement.classList.add("five");
-                else if (cell.value === 6) cellElement.classList.add("six");
-                else if (cell.value === 7) cellElement.classList.add("seven");
-                else if (cell.value === 8) cellElement.classList.add("eight");
-                
+
+                this.addClickEvents(cellElement);
                 cellElement.dataset.x = String(x);
                 cellElement.dataset.y = String(y);
-                cellElement.dataset.value = `${cell.value}`;
-                boardDiv.appendChild(cellElement);
+                cellArrRow.push(cellElement);
+            }) 
+            cellArr.push(cellArrRow);
+        })
+        return cellArr;
+    }
+
+    // ! convert to purely displaying the board (not adding classes -- do that in makeDisplayBoard)
+    public displayBoard(boardGrid: Cell[][]): HTMLElement {
+        const boardDiv = document.createElement("div");
+        boardDiv.id = "gameBoard";
+        boardDiv.classList.add("gameBoard");
+        //caps the num of columns so the next row begins
+        boardDiv.style.gridTemplateColumns = `repeat(${boardGrid[0].length}, )`;
+
+
+        this.cellElements.forEach((cellRow) => {
+            cellRow.forEach((cellEl) => {
+                boardDiv.appendChild(cellEl);
             })
-        });
+        })
         return boardDiv;
     }
 
     // Todo: Finish openCell 
     private openCell(cell: HTMLDivElement) {
-        if (!cell.dataset.value || cell.classList.contains("revealed")) return
+        const cellGrid = this.board.getBoard()
+        const boardCell = cellGrid[Number(cell.dataset.y)][Number(cell.dataset.x)]
+        if (!cellGrid || cell.classList.contains("revealed")) return
         // -1 = mine
-        if (Number(cell.dataset.value) === -1) {
+        if (boardCell.value === -1) {
             // ! Add Game Over
+            try {
+                const boardDiv = document.querySelector("#gameBoard");
+                if (!boardDiv) throw new Error("Cant find gameBoard Div")
+                boardDiv.classList.add("finished")
+            } catch (e) {
+                console.log(e)
+            }
             this.gameState = "finished";
+            this.addStyles(boardCell, cell)
         }
 
         if (this.gameState === "not started") this.gameState = "in progress";
 
-        this.gameBoard.addOpenCellCount();
-
         // Todo: finish this
-        if (this.gameBoard.getOpenCellCount() === (this.gameBoard.getNumOfCells() - this.gameBoard.getNumOfMines())) {
+        if (this.board.getOpenCellCount() === (this.board.getNumOfCells() - this.board.getNumOfMines())) {
             this.gameState = "finished";
             console.log("you won!")
         }
 
-        if (Number(cell.dataset.value) > 0) {
-            cell.textContent = cell.dataset.value  ;
+        if (boardCell.value > 0) {
+            this.board.addOpenCellCount();
+
+            cell.textContent = String(boardCell.value);
+            boardCell.state = 'open';
+            this.addStyles(boardCell, cell)
         }
 
-        if (Number(cell.dataset.value) === 0) {
-            
-        }
+        // openZeros() method will add "revealed" class to the zeros
         cell.classList.add("revealed");
 
-        console.log(cell)
-        console.log(cell.dataset)
+        if (boardCell.value === 0) {
+            try {
+                if (!(cell.dataset.x) && !(cell.dataset.y)) {
+                    throw new Error("No dataset coordinates")
+                }
+                const groupdedZeros = this.findGroupedZeros(cellGrid, Number(cell.dataset.x), Number(cell.dataset.y))
+                this.openZeros(groupdedZeros, cellGrid);
+            } catch (e) {
+                console.log(e)
+            }
+        }
     }
 
-    private openZeros(cell: HTMLDivElement, map: number[][]) {
+    private openZeros(zerosList: number[][], cellGrid: Cell[][]) {
+        const cellDivs = this.cellElements
+        zerosList.forEach((zeroCoordinate) => {
+            this.board.addOpenCellCount();
 
+            //zeroCoordinate => [x,y] structure
+            const x = zeroCoordinate[0];
+            const y = zeroCoordinate[1];
+
+            const boardCell = cellGrid[y][x]
+            const cellEl = cellDivs[y][x]
+
+            boardCell.state = 'open';
+            cellEl.classList.add("revealed");
+        })
+    }
+
+    private findGroupedZeros(graph: Cell[][], startCellX: number, startCellY: number):number[][] {
+        const foundZeros: number[][] = [];
+        const visited: number[][] = [];
+        const queue: number[][] = [];
+
+        const traversalNums: number[][] = [
+            [-1, 0], [0, 1], [1, 0], [0, -1]
+        ]
+
+        queue.push([startCellX, startCellY]);
+        visited.push([startCellX, startCellY]);
+        foundZeros.push([startCellX, startCellY]);
+
+        while (queue.length > 0) {
+            const cellCoords = queue.shift();
+            if (!cellCoords) throw new Error("No Cell Coordinates");
+
+            traversalNums.forEach((travelNum) => {
+                const nextCellX = cellCoords[0] + travelNum[0];
+                const nextCellY = cellCoords[1] + travelNum[1];
+
+                if (nextCellX < 0 || nextCellX > graph[0].length - 1  ||
+                    nextCellY < 0 || nextCellY > graph.length - 1) {
+                    return;
+                }
+
+                const hasXY = (element: number[]) => {
+                    if (element[0] === nextCellX && element[1] === nextCellY) {
+                        return true
+                    }
+                    return false
+                }
+
+                //checks if it is processed or in the process
+                if (visited.some(hasXY) || queue.some(hasXY)) {
+                    return;
+                }
+
+                if (graph[nextCellY][nextCellX].value !== 0) {
+                    visited.push([nextCellX, nextCellY])
+                    return;
+                }
+
+                queue.push([nextCellX, nextCellY]);
+                foundZeros.push([nextCellX, nextCellY]);
+            })
+
+            visited.push([cellCoords[0], cellCoords[1]])
+        }
+        return foundZeros;
     }
 
     private addClickEvents(element: HTMLElement) {
@@ -137,5 +203,18 @@ export class Game {
             }
             this.pressedCell = null;
         })
+    }
+
+    private addStyles(cell: Cell, cellEl: HTMLDivElement) {
+        // ! FIX
+        if (cell.value === -1) { cellEl.classList.add("mine")}
+        else if (cell.value === 1) cellEl.classList.add("one");
+        else if (cell.value === 2) cellEl.classList.add("two");
+        else if (cell.value === 3) cellEl.classList.add("three");
+        else if (cell.value === 4) cellEl.classList.add("four");
+        else if (cell.value === 5) cellEl.classList.add("five");
+        else if (cell.value === 6) cellEl.classList.add("six");
+        else if (cell.value === 7) cellEl.classList.add("seven");
+        else if (cell.value === 8) cellEl.classList.add("eight");
     }
 }
