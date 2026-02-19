@@ -7,7 +7,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const gameBoard = new Board();
     const game = new Game(gameBoard);
 
-    const gameBoardDiv = game.displayBoard(gameBoard.getBoard());
+    const gameBoardDiv = game.displayGameBoard(gameBoard.getBoard());
     gameBoardDiv.id = "gameBoard";
 
     const board =  gameBoard.getBoard();
