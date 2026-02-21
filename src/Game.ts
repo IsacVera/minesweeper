@@ -128,8 +128,13 @@ export class Game {
             const x = cellCoordinate[0];
             const y = cellCoordinate[1];
 
-            const boardCell = cellGrid[y][x]
-            const cellEl = cellDivs[y][x]
+            const boardCell = cellGrid[y][x];
+            const cellEl = cellDivs[y][x];
+
+            if (boardCell.state === "flagged") {
+                cellEl.classList.remove("flagged");
+                this.board.subtractCellsFlagged();
+            }
 
             boardCell.state = 'open';
             cellEl.classList.add("revealed");
@@ -200,10 +205,16 @@ export class Game {
         const cellGrid = this.board.getBoard()
         const cell = cellGrid[Number(cellEl.dataset.y)][Number(cellEl.dataset.x)]
 
+        if (cell.state === "flagged") {
+            cell.state = "unopened";
+            cellEl.classList.remove("flagged");
+            this.board.subtractCellsFlagged();
+            return;
+        }
+
         cell.state = "flagged";
         cellEl.classList.add("flagged");
-
-        
+        this.board.addCellsFlagged(); 
     }
 
 
@@ -227,12 +238,14 @@ export class Game {
                 this.pressedCell = null;
                 return;
             }
-            const cell = e.target.closest<HTMLDivElement>(".cell");
+            const cellEl = e.target.closest<HTMLDivElement>(".cell");
+            if (!(cellEl) || !(cellEl === this.pressedCell)) return;
 
-            //(cell) to check if cell is not a null
-            if ((cell) && cell === this.pressedCell) {
-                this.openCell(cell)
-            }
+            const cellGrid = this.board.getBoard()
+            const cell = cellGrid[Number(cellEl.dataset.y)][Number(cellEl.dataset.x)]
+
+            if (!(cell.state === "flagged")) this.openCell(cellEl);
+
             this.pressedCell = null;
         })
 
@@ -242,6 +255,7 @@ export class Game {
             e.preventDefault();
 
             const cell = e.target.closest<HTMLDivElement>(".cell");
+            if (!cell) return;
 
             this.flagCell(cell); 
         })

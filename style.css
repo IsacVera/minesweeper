@@ -58,9 +58,11 @@ body {
 .cell.eight {
     color: #660c76
 }
-
-.cell:not(.revealed) {
-  background-image: none;
+.cell.flagged {
+    background-image: url("icons/flag.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px 16px;
 }
 
 .cell:active:hover {

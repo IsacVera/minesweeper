@@ -5,12 +5,14 @@ export class Board {
     private rowLength: number;
     private colLength: number;
     private numOfMines: number;
+    private cellsFlagged: number;
     private openCellCount: number;
 
     constructor() {
         this.rowLength =  8;
         this.colLength =  10;
         this.numOfMines = 10;
+        this.cellsFlagged = 0;
         this.openCellCount = 0;
         this.grid = this.makeBoard(this.rowLength, this.colLength);
     }
@@ -25,6 +27,18 @@ export class Board {
 
     public getNumOfMines(): number {
         return this.numOfMines;
+    }
+
+    public getNumOfCellsFlagged(): number {
+        return this.cellsFlagged;
+    }
+
+    public addCellsFlagged(): void {
+        this.cellsFlagged++;
+    }
+
+    public subtractCellsFlagged(): void {
+        this.cellsFlagged--;
     }
 
     public getOpenCellCount(): number {
